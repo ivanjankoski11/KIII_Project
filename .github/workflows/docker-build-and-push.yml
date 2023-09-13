@@ -1,29 +1,51 @@
-name: atms-ci
+name: Build and Deploy
 
+# Run the workflow when code is pushed to the main branch
 on:
   push:
     branches:
-      - 'main'
-
+      - main
+# This is the workflow that is being run.
 jobs:
-  docker:
+  build-and-deploy:
+    # This is telling GitHub to run the workflow on the latest version of Ubuntu.
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # Install dependencies and run tests for the client application
+      - name: Install and Test Client
+        working-directory: ./frontend
+        run: |
+          npm install
+      # Install dependencies, export environment variables to be used by application and run tests for the server application
+      - name: Install and Test Server
+        working-directory: ./backend
+        run: |
+          npm install
+      # Build a Docker image for the client application
+      - name: Build Client Docker Image
+        working-directory: ./frontend
+        # Build image with tag rakeshpotnuru/productivity-app:client
+        run: |
+          docker build -t jankoski11/atms-client:latest .
+
+      # Build a Docker image for the server application
+      - name: Build Server Docker Image
+        working-directory: ./backend
+          # Build image with tag rakeshpotnuru/productivity-app:server
+        run: |
+          docker build -t jankoski11/atms-server:latest .
+
+      # Login to Docker Hub using credentials from repository secrets
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: jankoski11/atms:latest
+
+      # Push the Docker images to Docker Hub
+      - name: Push Docker Images to Docker Hub
+        run: |
+          docker push jankoski11/atms-client:latest
+          docker push jankoski11/atms-server:latest
