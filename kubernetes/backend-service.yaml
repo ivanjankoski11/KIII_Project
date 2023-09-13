@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: atms-backend-service
+  namespace: atms
+spec:
+  selector:
+    app: atms-backend
+  ports:
+    - protocol: TCP
+      port: 1337
+      targetPort: 1337

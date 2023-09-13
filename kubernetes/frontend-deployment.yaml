@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atms-frontend-deployment
+  namespace: atms
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: atms-frontend
+  template:
+    metadata:
+      labels:
+        app: atms-frontend
+    spec:
+      containers:
+        - name: atms-frontend
+          image: jankoski11/atms-server:latest
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 3000

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atms-config
+  namespace: atms
+data:
+  ATLAS_URI: mongodb+srv://jankoski11:lozinka123@cluster0.bo14tln.mongodb.net/test
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: atms-secret
+  namespace: atms
+type: Opaque
+data:
+  ATLAS_URI: mongodb+srv://jankoski11:lozinka123@cluster0.bo14tln.mongodb.net/test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atms-backend-deployment
+  namespace: atms
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: atms-project
+  template:
+    metadata:
+      labels:
+        app: atms-project
+    spec:
+      containers:
+        - name: atms-project
+          image: jankoski11/atms-server:latest
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 1337
+          envFrom:
+            - configMapRef:
+                name: atms-config
+          env:
+            - name: ATLAS_URI
+              valueFrom:
+                secretKeyRef:
+                  name: atms-secret
+                  key: ATLAS_URI
